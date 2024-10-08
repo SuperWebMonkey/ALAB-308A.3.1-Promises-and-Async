@@ -1,6 +1,6 @@
 import { central, db1, db2, db3, vault } from "./db.js";
 
-function getUserData(id) {
+async function getUserData(id) {
   let userObj = {};
   let userInfo = {};
   let fullInfo = {};
@@ -30,31 +30,60 @@ function getUserData(id) {
     },
   };
 
-  const promise1 = Promise.resolve()
+  const promise1 = await Promise.resolve()
     .then(() => strThenable)
     .then((val) => {
       return dbs[val];
     })
     .then((val) => {
-      return val(id);
+      const obj = val(id);
+      return obj;
+      console.log(obj);
+    })
+    .then((val) => {
+      console.log(val);
+      return val;
     });
 
   console.log(promise1);
 
-  const promise2 = Promise.resolve().then(() => vaultThenable);
+  const promise2 = await Promise.resolve()
+    .then(() => vaultThenable)
+    .then((val) => {
+      return val;
+    });
 
   console.log(promise2);
 
-  Promise.any([promise1, promise2])
-    .then((result) => {
-      return result;
+  const result = await Promise.all([promise1, promise2])
+    .then(([result, result2]) => {
+      console.log(result, result2);
+      return [result, result2];
     })
     .then((val) => {
+      console.log(...val);
       fullInfo = { ...val };
-      console.log(fullInfo);
-      return fullInfo;
+      let fullInfo2 = { ...fullInfo[0], ...fullInfo[1] };
+      return fullInfo2;
+    })
+    .catch((error) => {
+      console.log("caught an error", error);
     });
+
+  console.log(result);
+
+  return result;
 }
 
-const fullInfo = getUserData(5);
+// getUserData(0);
+// getUserData(11);
+// getUserData('chrono trigger')
+const start = performance.now();
+
+getUserData(5);
+
+const end = performance.now();
+const duration = end - start;
+console.log("time is", duration);
+
 // console.log(fullInfo);
